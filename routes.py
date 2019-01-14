@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 from models import db, User
-from forms import SignupForm, LoginForm
+from forms import SignupForm, LoginForm, AddressForm
 
 # This is how you define this script is a Flask application
 app = Flask(__name__)
@@ -18,7 +18,23 @@ def index():
 # Home route
 @app.route('/home')
 def home():
-    return render_template('home.html')
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    form = AddressForm()
+
+    if request.method == 'POST':
+        if form.validate() == False:
+            return render_template('home.html', form=form)
+        else:
+            # Get the address
+            address = form.address.data
+
+            # Query for places 
+
+            # Show results
+    else:
+        return render_template('home.html', form=form)
 
 # About route
 @app.route("/about")
@@ -28,6 +44,9 @@ def about():
 # Signup route
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
+    if 'email' in session:
+        return redirect(url_for('home'))
+
     form = SignupForm()
 
     if request.method == 'POST':
@@ -45,6 +64,9 @@ def signup():
 # Login route
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    if 'email' in session:
+        return redirect(url_for('home'))
+
     form = LoginForm()
 
     if request.method == 'POST':
@@ -68,6 +90,7 @@ def login():
 def logout():
     session.pop('email', None)
     return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
