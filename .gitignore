@@ -1,3 +1,4 @@
 .vscode
 venv/
 Ex_Files_Learning_Flask
+__pycache__
