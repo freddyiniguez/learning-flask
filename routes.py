@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for
-from models import db, User
+from models import db, User, Place
 from forms import SignupForm, LoginForm, AddressForm
 
 # This is how you define this script is a Flask application
@@ -10,18 +10,20 @@ db.init_app(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///learningflask'
 app.secret_key = "development-key"
 
-# Index
+# Index route
 @app.route("/")
 def index():
     return render_template("index.html")
 
 # Home route
-@app.route('/home')
+@app.route('/home', methods=['GET', 'POST'])
 def home():
     if 'email' not in session:
         return redirect(url_for('login'))
 
     form = AddressForm()
+    my_coordinates = (37.4221, -122.0844)
+
 
     if request.method == 'POST':
         if form.validate() == False:
@@ -31,10 +33,14 @@ def home():
             address = form.address.data
 
             # Query for places 
+            p = Place()
+            my_coordinates = p.address_to_latlng(address)
+            places = p.query(address)
 
             # Show results
+            return render_template('home.html', form=form, my_coordinates=my_coordinates, places=places)
     else:
-        return render_template('home.html', form=form)
+        return render_template('home.html', form=form, my_coordinates=my_coordinates, places=places)
 
 # About route
 @app.route("/about")
